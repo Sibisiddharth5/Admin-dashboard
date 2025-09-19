@@ -1,4 +1,4 @@
-name: Deploy to Server
+name: Deploy Admin Dashboard
 
 # Trigger workflow on push to main branch
 on:
@@ -28,19 +28,47 @@ jobs:
           ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
 
-      # Step 4: Deploy to server
-      - name: Deploy to server
+      # Step 4: Deploy backend and frontend separately
+      - name: Deploy Backend & Frontend
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-            echo "Deploying latest code..."
-            cd ~/Admin-dashboard           # Change this path if different
-            git reset --hard               # Ensure clean state
-            git pull origin main           # Pull latest code from GitHub
+            echo "Deploying Admin Dashboard..."
 
-            # Docker commands
-            docker compose down            # Stop old containers
-            docker compose build --no-cache
-            docker compose up -d           # Start containers in background
+            # --------- BACKEND ---------
+            echo "Deploying backend..."
+            cd ~/Admin-dashboard/backend
+            git reset --hard
+            git pull origin main
+            docker stop admin-backend || true
+            docker rm admin-backend || true
+            docker rmi admin-dashboard:latest || true
+            docker build -t admin-dashboard:latest .
+            docker run -d --name admin-backend \
+              --network traefik-net \
+              -l traefik.enable=true \
+              -l traefik.http.routers.admin-backend.rule='Host(`app.kambaa.ai`) && PathPrefix(`/api`)' \
+              -l traefik.http.routers.admin-backend.entrypoints=websecure \
+              -l traefik.http.routers.admin-backend.tls.certresolver=myresolver \
+              admin-dashboard:latest
+
+            # --------- FRONTEND ---------
+            echo "Deploying frontend..."
+            cd ~/Admin-dashboard/frontend
+            git reset --hard
+            git pull origin main
+            npm install
+            npm run build
+            docker stop admin-frontend || true
+            docker rm admin-frontend || true
+            docker rmi admin-dashboard-frontend:latest || true
+            docker build -t admin-dashboard-frontend:latest .
+            docker run -d --name admin-frontend \
+              --network traefik-net \
+              -l traefik.enable=true \
+              -l traefik.http.routers.admin-frontend.rule='Host(`dashboard.kambaa.ai`)' \
+              -l traefik.http.routers.admin-frontend.entrypoints=websecure \
+              -l traefik.http.routers.admin-frontend.tls.certresolver=myresolver \
+              admin-dashboard-frontend:latest
 
             echo "Deployment completed successfully!"
           EOF
