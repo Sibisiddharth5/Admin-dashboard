@@ -12,7 +12,7 @@ function App() {
       const token = localStorage.getItem('adminToken');
       if (token) {
         try {
-          await axios.get('http://localhost:8000/api/admin/stats', {
+          await axios.get('https://app.kambaa.ai/api/admin/stats', {
             headers: { Authorization: `Bearer ${token}` }
           });
           setIsAuthenticated(true);
