@@ -1,35 +1,46 @@
 name: Deploy to Server
 
+# Trigger workflow on push to main branch
 on:
   push:
     branches:
-      - main   # 👈 change if your default branch is not 'main'
+      - main   # Change if your default branch is not 'main'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout the code
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Step 2: Setup SSH agent with your private key
       - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.8.0
+        uses: webfactory/ssh-agent@v0.9.1
         with:
-          ssh-private-key: |
-            ${{ secrets.SERVER_SSH_KEY }}
+          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
 
+      # Step 3: Add server to known hosts to prevent host verification prompt
       - name: Add server to known hosts
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
 
+      # Step 4: Deploy to server
       - name: Deploy to server
         run: |
-          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-            cd ~/Admin-dashboard   # 👈 change path if different
-            git pull origin main   # pulls latest code
-            docker compose down    # stop old containers
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+            echo "Deploying latest code..."
+            cd ~/Admin-dashboard           # Change this path if different
+            git reset --hard               # Ensure clean state
+            git pull origin main           # Pull latest code from GitHub
+
+            # Docker commands
+            docker compose down            # Stop old containers
             docker compose build --no-cache
-            docker compose up -d   # run in background
+            docker compose up -d           # Start containers in background
+
+            echo "Deployment completed successfully!"
           EOF
