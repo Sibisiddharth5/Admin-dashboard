@@ -3,7 +3,7 @@ name: Deploy to Server
 on:
   push:
     branches:
-      - main   # change if you want another branch for deployment
+      - main   # 👈 change if your default branch is not 'main'
 
 jobs:
   deploy:
@@ -11,18 +11,25 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up SSH
+      - name: Setup SSH
         uses: webfactory/ssh-agent@v0.8.0
         with:
-          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+          ssh-private-key: |
+            ${{ secrets.SERVER_SSH_KEY }}
 
-      - name: Deploy to Server
+      - name: Add server to known hosts
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-            cd /home/${{ secrets.USER }}/kambaa   # change to your app directory
-            git pull origin main
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to server
+        run: |
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+            cd ~/Admin-dashboard   # 👈 change path if different
+            git pull origin main   # pulls latest code
+            docker compose down    # stop old containers
             docker compose build --no-cache
-            docker compose up -d
+            docker compose up -d   # run in background
           EOF
