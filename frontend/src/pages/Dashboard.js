@@ -23,10 +23,10 @@ const Dashboard = ({ setIsAuthenticated }) => {
       const headers = { Authorization: `Bearer ${token}` };
       
       const [containersRes, usersRes, statsRes, profileRes] = await Promise.all([
-        axios.get('http://localhost:8000/api/containers/', { headers }),
-        axios.get('http://localhost:8000/api/users/', { headers }),
-        axios.get('http://localhost:8000/api/admin/stats', { headers }),
-        axios.get('http://localhost:8000/api/profile/me', { headers })
+        axios.get('https://app.kambaa.ai/api/containers/', { headers }),
+        axios.get('https://app.kambaa.ai/api/users/', { headers }),
+        axios.get('https://app.kambaa.ai/api/admin/stats', { headers }),
+        axios.get('https://app.kambaa.ai/api/profile/me', { headers })
       ]);
       
       setContainers(containersRes.data);
@@ -302,7 +302,7 @@ const UserList = ({ users, onRefresh }) => {
     
     try {
       const token = localStorage.getItem('adminToken');
-      await axios.delete(`http://localhost:8000/api/users/${userId}`, {
+      await axios.delete(`https://app.kambaa.ai/api/users/${userId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       onRefresh();

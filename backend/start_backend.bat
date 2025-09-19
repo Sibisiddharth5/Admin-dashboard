@@ -13,7 +13,7 @@ if %errorlevel% neq 0 (
 echo.
 echo Database connection verified!
 echo.
-echo Backend API: http://localhost:8000
-echo API Documentation: http://localhost:8000/docs
+echo Backend API: https://app.kambaa.ai
+echo API Documentation: https://app.kambaa.ai/docs
 echo.
 python main.py
