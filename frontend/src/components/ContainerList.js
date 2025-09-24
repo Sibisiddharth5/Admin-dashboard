@@ -26,7 +26,7 @@ const ContainerList = ({ containers, onRefresh }) => {
     
     try {
       const token = localStorage.getItem('adminToken');
-      await axios.post(`https://app.kambaa.ai/api/containers/${containerName}/${action}`, {}, {
+      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/containers/${containerName}/${action}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       onRefresh();

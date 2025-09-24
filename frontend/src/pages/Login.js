@@ -17,7 +17,7 @@ const Login = ({ setIsAuthenticated }) => {
     console.log('Sending login request:', credentials);
 
     try {
-      const response = await axios.post('https://app.kambaa.ai/api/admin/login', credentials);
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/admin/login`, credentials);
       console.log('Login successful:', response.data);
       localStorage.setItem('adminToken', response.data.token);
       setIsAuthenticated(true);

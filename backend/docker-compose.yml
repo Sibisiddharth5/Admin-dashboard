@@ -7,7 +7,7 @@ services:
     ports:
       - "8004:8004"
     networks:
-      - traefik_default
+      - traefik-net
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.admin-dashboard.rule=Host(`dashboard.kambaa.ai`)"
@@ -31,13 +31,13 @@ services:
     ports:
       - "3306:3306"
     networks:
-      - traefik_default
+      - traefik-net
     volumes:
       - mysql_data:/var/lib/mysql
     restart: unless-stopped
 
 networks:
-  traefik_default:
+  traefik-net:
     external: true
 
 volumes:
