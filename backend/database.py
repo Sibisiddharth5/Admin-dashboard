@@ -2,9 +2,8 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.exc import SQLAlchemyError
 import time
-
 DATABASE_URL = "mysql+mysqlconnector://tenant_user:TenantPass123@mysql-db:3306/multi_tenant_db"
-
+# DATABASE_URL = "mysql+pymysql://root:@localhost:3306/dashboard_db"
 # Create engine with connection pooling and retry logic
 engine = create_engine(
     DATABASE_URL,

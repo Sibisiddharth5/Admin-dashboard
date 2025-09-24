@@ -26,7 +26,7 @@ const ContainerList = ({ containers, onRefresh }) => {
     
     try {
       const token = localStorage.getItem('adminToken');
-      await axios.post(`http://localhost:8000/api/containers/${containerName}/${action}`, {}, {
+      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/containers/${containerName}/${action}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       onRefresh();
