@@ -117,21 +117,30 @@ const ContainerList = ({ containers, onRefresh }) => {
                     <span style={{ color: '#9ca3af' }}>No user data</span>
                   )}
                 </td>
-                <td style={{ fontSize: '12px' }}>{container.image}</td>
+                <td style={{ fontSize: '12px', fontFamily: 'monospace' }}>
+                  {container.image || 'nginx:alpine'}
+                </td>
                 <td>
                   <span className={
                     container.status === 'running' ? 'status-running' : 
                     container.status === 'not_created' ? 'status-not-created' :
-                    container.status === 'unknown' ? 'status-unknown' : 'status-stopped'
+                    container.status === 'docker_unavailable' ? 'status-unknown' : 
+                    container.status === 'exited' ? 'status-stopped' :
+                    container.status === 'created' ? 'status-stopped' : 'status-stopped'
                   }>
                     {container.status === 'not_created' ? 'Not Created' : 
-                     container.status === 'unknown' ? 'Docker N/A' : container.status}
+                     container.status === 'docker_unavailable' ? 'Docker N/A' : 
+                     container.status === 'exited' ? 'Stopped' :
+                     container.status === 'created' ? 'Created' :
+                     container.status}
                   </span>
                 </td>
-                <td style={{ fontSize: '11px' }}>{container.ports}</td>
+                <td style={{ fontSize: '11px', fontFamily: 'monospace' }}>
+                  {container.ports || 'N/A'}
+                </td>
                 <td>
                   <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                    {container.status === 'unknown' ? (
+                    {container.status === 'docker_unavailable' || !container.docker_available ? (
                       <span style={{ fontSize: '11px', color: '#6b7280', fontStyle: 'italic' }}>
                         Docker not available
                       </span>
@@ -140,41 +149,54 @@ const ContainerList = ({ containers, onRefresh }) => {
                         onClick={() => handleContainerAction(container.name, 'create')}
                         disabled={actionLoading[container.name]}
                         className="btn btn-success"
-                        style={{ fontSize: '11px' }}
+                        style={{ fontSize: '11px', padding: '4px 8px' }}
                       >
                         {actionLoading[container.name] === 'create' ? 'Creating...' : 'Create'}
                       </button>
                     ) : container.status === 'running' ? (
-                      <button
-                        onClick={() => handleContainerAction(container.name, 'stop')}
-                        disabled={actionLoading[container.name]}
-                        className="btn btn-warning"
-                        style={{ fontSize: '11px' }}
-                      >
-                        {actionLoading[container.name] === 'stop' ? 'Stopping...' : 'Stop'}
-                      </button>
+                      <>
+                        <button
+                          onClick={() => handleContainerAction(container.name, 'stop')}
+                          disabled={actionLoading[container.name]}
+                          className="btn btn-warning"
+                          style={{ fontSize: '11px', padding: '4px 8px' }}
+                        >
+                          {actionLoading[container.name] === 'stop' ? 'Stopping...' : 'Stop'}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setConfirmAction(() => () => handleContainerAction(container.name, 'remove'));
+                            setShowConfirm(true);
+                          }}
+                          disabled={actionLoading[container.name]}
+                          className="btn btn-danger"
+                          style={{ fontSize: '11px', padding: '4px 8px' }}
+                        >
+                          {actionLoading[container.name] === 'remove' ? 'Removing...' : 'Remove'}
+                        </button>
+                      </>
                     ) : (
-                      <button
-                        onClick={() => handleContainerAction(container.name, 'start')}
-                        disabled={actionLoading[container.name]}
-                        className="btn btn-primary"
-                        style={{ fontSize: '11px' }}
-                      >
-                        {actionLoading[container.name] === 'start' ? 'Starting...' : 'Start'}
-                      </button>
-                    )}
-                    {container.status !== 'not_created' && container.status !== 'unknown' && (
-                      <button
-                        onClick={() => {
-                          setConfirmAction(() => () => handleContainerAction(container.name, 'remove'));
-                          setShowConfirm(true);
-                        }}
-                        disabled={actionLoading[container.name]}
-                        className="btn btn-danger"
-                        style={{ fontSize: '11px' }}
-                      >
-                        {actionLoading[container.name] === 'remove' ? 'Removing...' : 'Remove'}
-                      </button>
+                      <>
+                        <button
+                          onClick={() => handleContainerAction(container.name, 'start')}
+                          disabled={actionLoading[container.name]}
+                          className="btn btn-primary"
+                          style={{ fontSize: '11px', padding: '4px 8px' }}
+                        >
+                          {actionLoading[container.name] === 'start' ? 'Starting...' : 'Start'}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setConfirmAction(() => () => handleContainerAction(container.name, 'remove'));
+                            setShowConfirm(true);
+                          }}
+                          disabled={actionLoading[container.name]}
+                          className="btn btn-danger"
+                          style={{ fontSize: '11px', padding: '4px 8px' }}
+                        >
+                          {actionLoading[container.name] === 'remove' ? 'Removing...' : 'Remove'}
+                        </button>
+                      </>
                     )}
                   </div>
                 </td>

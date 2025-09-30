@@ -36,7 +36,7 @@ jobs:
 
             # --------- BACKEND ---------
             echo "Deploying backend..."
-            cd ~/Admin-dashboard/backend
+            cd ~/Admin-dashboard
             git reset --hard
             git pull origin main
             docker stop admin-backend || true
@@ -45,6 +45,7 @@ jobs:
             docker build -t admin-dashboard:latest .
             docker run -d --name admin-backend \
               --network traefik-net \
+              -v /var/run/docker.sock:/var/run/docker.sock \
               -l traefik.enable=true \
               -l traefik.http.routers.admin-backend.rule='Host(`app.kambaa.ai`) && PathPrefix(`/api`)' \
               -l traefik.http.routers.admin-backend.entrypoints=websecure \

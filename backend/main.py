@@ -5,6 +5,8 @@ from fastapi import Depends
 import subprocess
 import database
 import models
+import docker
+from docker.errors import DockerException
 from routers import registration, users, containers, auth, admin_management, profile
 
 app = FastAPI(title="Admin Dashboard API", version="2.0.0")
@@ -44,36 +46,67 @@ def get_dashboard_stats(admin: str = Depends(auth.verify_admin_token), db: Sessi
     total_users = db.query(models.User).count()
     running_containers = 0
     total_containers = 0
+    docker_available = True
     
     try:
-        result = subprocess.run(
-            ["docker", "ps", "--format", "{{.Names}}"],
-            capture_output=True,
-            text=True,
-            timeout=5
-        )
-        if result.returncode == 0:
-            running_containers = len([line for line in result.stdout.strip().split('\n') 
-                                    if line.strip() and line.startswith('chatbot_')])
+        # Try Docker API first
+        client = docker.from_env()
+        all_containers = client.containers.list(all=True)
+        chatbot_containers = [c for c in all_containers if c.name.startswith('chatbot_')]
         
-        result_all = subprocess.run(
-            ["docker", "ps", "-a", "--format", "{{.Names}}"],
-            capture_output=True,
-            text=True,
-            timeout=5
-        )
-        if result_all.returncode == 0:
-            total_containers = len([line for line in result_all.stdout.strip().split('\n') 
-                                  if line.strip() and line.startswith('chatbot_')])
+        running_containers = len([c for c in chatbot_containers if c.status == 'running'])
+        total_containers = len(chatbot_containers)
         
-    except:
-        pass
+    except DockerException:
+        # Fallback to subprocess
+        try:
+            # Check if docker is available
+            check_result = subprocess.run(
+                ["docker", "--version"],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            
+            if check_result.returncode == 0:
+                # Get running containers
+                result = subprocess.run(
+                    ["docker", "ps", "--format", "{{.Names}}"],
+                    capture_output=True,
+                    text=True,
+                    timeout=5
+                )
+                if result.returncode == 0 and result.stdout.strip():
+                    running_containers = len([line for line in result.stdout.strip().split('\n') 
+                                            if line.strip() and line.startswith('chatbot_')])
+                
+                # Get all containers
+                result_all = subprocess.run(
+                    ["docker", "ps", "-a", "--format", "{{.Names}}"],
+                    capture_output=True,
+                    text=True,
+                    timeout=5
+                )
+                if result_all.returncode == 0 and result_all.stdout.strip():
+                    total_containers = len([line for line in result_all.stdout.strip().split('\n') 
+                                          if line.strip() and line.startswith('chatbot_')])
+            else:
+                docker_available = False
+            
+        except Exception:
+            docker_available = False
+    
+    # If Docker is not available, show expected containers based on users
+    if not docker_available:
+        total_containers = total_users  # Each user should have a container
+        running_containers = 0  # Can't determine without Docker
     
     return {
         "total_users": total_users,
         "running_containers": running_containers,
         "total_containers": total_containers,
-        "stopped_containers": max(0, total_containers - running_containers)
+        "stopped_containers": max(0, total_containers - running_containers),
+        "docker_available": docker_available
     }
 
 @app.get("/health")

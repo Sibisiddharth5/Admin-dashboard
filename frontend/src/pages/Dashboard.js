@@ -224,6 +224,11 @@ const DashboardHome = ({ stats }) => {
             {stats.total_containers || 0}
           </h3>
           <p style={{ margin: 0, color: '#718096', fontWeight: '600', fontSize: '16px' }}>Total Containers</p>
+          {stats.docker_available === false && (
+            <p style={{ margin: '8px 0 0 0', color: '#e53e3e', fontSize: '12px', fontStyle: 'italic' }}>
+              Docker unavailable
+            </p>
+          )}
         </div>
       </div>
 
@@ -253,8 +258,13 @@ const DashboardHome = ({ stats }) => {
                 <span style={{ fontWeight: '600', color: '#27ae60' }}>98.5%</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: '#4a5568' }}>System Health</span>
-                <span style={{ fontWeight: '600', color: '#27ae60' }}>Healthy</span>
+                <span style={{ color: '#4a5568' }}>Docker Status</span>
+                <span style={{ 
+                  fontWeight: '600', 
+                  color: stats.docker_available !== false ? '#27ae60' : '#e53e3e' 
+                }}>
+                  {stats.docker_available !== false ? 'Available' : 'Unavailable'}
+                </span>
               </div>
             </div>
           </div>
