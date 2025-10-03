@@ -17,8 +17,9 @@ def verify_admin_credentials(username: str, password: str, db: Session):
     if not admin:
         return False
     
-    # Truncate password to 72 bytes for bcrypt compatibility
-    password = password[:72]
+    # Ensure password is within bcrypt's 72-byte limit
+    if len(password.encode('utf-8')) > 72:
+        password = password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
     
     try:
         # Check if password is already hashed (starts with $2b$ for bcrypt)
@@ -51,8 +52,9 @@ def create_admin_token(username: str):
     return jwt.encode(token_data, SECRET_KEY, algorithm="HS256")
 
 def hash_password(password: str):
-    # Truncate password to 72 bytes for bcrypt compatibility
-    password = password[:72]
+    # Ensure password is within bcrypt's 72-byte limit
+    if len(password.encode('utf-8')) > 72:
+        password = password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
     return pwd_context.hash(password)
 
 def create_default_admin(db: Session):

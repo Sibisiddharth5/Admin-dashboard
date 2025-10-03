@@ -41,6 +41,10 @@ def admin_login(credentials: dict, db: Session = Depends(database.get_db)):
         if not username or not password:
             raise HTTPException(status_code=401, detail="Username and password required")
         
+        # Check password length before processing
+        if len(password.encode('utf-8')) > 72:
+            print(f"Password too long ({len(password.encode('utf-8'))} bytes), truncating to 72 bytes")
+        
         if not auth.verify_admin_credentials(username, password, db):
             raise HTTPException(status_code=401, detail="Invalid credentials")
         
