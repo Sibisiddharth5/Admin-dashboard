@@ -17,15 +17,22 @@ def verify_admin_credentials(username: str, password: str, db: Session):
     if not admin:
         return False
     
-    # Check if password is already hashed (starts with $2b$ for bcrypt)
-    if admin.password.startswith('$2b$'):
-        return pwd_context.verify(password, admin.password)
-    else:
-        # Plain text password - verify and update to hashed
-        if admin.password == password:
-            admin.password = hash_password(password)
-            db.commit()
-            return True
+    # Truncate password to 72 bytes for bcrypt compatibility
+    password = password[:72]
+    
+    try:
+        # Check if password is already hashed (starts with $2b$ for bcrypt)
+        if admin.password.startswith('$2b$'):
+            return pwd_context.verify(password, admin.password)
+        else:
+            # Plain text password - verify and update to hashed
+            if admin.password == password:
+                admin.password = hash_password(password)
+                db.commit()
+                return True
+            return False
+    except Exception as e:
+        print(f"Password verification error: {e}")
         return False
 
 def verify_admin_token(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(database.get_db)):
@@ -44,6 +51,8 @@ def create_admin_token(username: str):
     return jwt.encode(token_data, SECRET_KEY, algorithm="HS256")
 
 def hash_password(password: str):
+    # Truncate password to 72 bytes for bcrypt compatibility
+    password = password[:72]
     return pwd_context.hash(password)
 
 def create_default_admin(db: Session):

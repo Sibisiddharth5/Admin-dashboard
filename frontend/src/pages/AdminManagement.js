@@ -36,7 +36,7 @@ const AdminManagement = ({ onSuccess }) => {
 
     try {
       const token = localStorage.getItem('adminToken');
-      await axios.post(`Analyse AnaE_BACKEND_URL}/api/admin-management/admins`, formData, {
+      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/admin-management/admins`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAlertMessage('Admin created successfully');

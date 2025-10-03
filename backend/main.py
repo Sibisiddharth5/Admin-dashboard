@@ -13,10 +13,16 @@ app = FastAPI(title="Admin Dashboard API", version="2.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "https://dashboard.kambaa.ai"],
+    allow_origins=[
+        "http://localhost:3000", 
+        "http://127.0.0.1:3000", 
+        "https://dashboard.kambaa.ai",
+        "https://app.kambaa.ai"
+    ],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
 
 # Include routers
@@ -28,17 +34,23 @@ app.include_router(profile.router)
 
 @app.post("/api/admin/login")
 def admin_login(credentials: dict, db: Session = Depends(database.get_db)):
-    username = credentials.get("username")
-    password = credentials.get("password")
-    
-    if not username or not password:
-        raise HTTPException(status_code=401, detail="Username and password required")
-    
-    if not auth.verify_admin_credentials(username, password, db):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    
-    token = auth.create_admin_token(username)
-    return {"token": token}
+    try:
+        username = credentials.get("username")
+        password = credentials.get("password")
+        
+        if not username or not password:
+            raise HTTPException(status_code=401, detail="Username and password required")
+        
+        if not auth.verify_admin_credentials(username, password, db):
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+        token = auth.create_admin_token(username)
+        return {"token": token}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Login error: {e}")
+        raise HTTPException(status_code=500, detail="Login failed due to server error")
 
 @app.get("/api/admin/stats")
 def get_dashboard_stats(admin: str = Depends(auth.verify_admin_token), db: Session = Depends(database.get_db)):
@@ -112,6 +124,10 @@ def get_dashboard_stats(admin: str = Depends(auth.verify_admin_token), db: Sessi
 @app.get("/health")
 def health_check():
     return {"status": "healthy", "message": "Admin Dashboard API is running"}
+
+@app.get("/api/cors-test")
+def cors_test():
+    return {"status": "success", "message": "CORS is working", "timestamp": "2024-01-01"}
 
 def startup_event():
     try:
