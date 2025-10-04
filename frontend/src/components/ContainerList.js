@@ -58,13 +58,49 @@ const ContainerList = ({ containers, onRefresh }) => {
   }
 
   return (
-    <div style={{
-      background: 'rgba(255, 255, 255, 0.95)',
-      backdropFilter: 'blur(10px)',
-      borderRadius: '16px',
-      padding: '32px',
-      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-    }}>
+    <div>
+      {/* Docker Status Banner */}
+      {containers.length > 0 && !containers[0].docker_available && (
+        <div style={{
+          background: 'linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%)',
+          border: '1px solid #fc8181',
+          borderRadius: '12px',
+          padding: '16px',
+          marginBottom: '24px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px'
+        }}>
+          <div style={{
+            width: '24px',
+            height: '24px',
+            background: '#e53e3e',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontSize: '14px',
+            fontWeight: 'bold'
+          }}>!</div>
+          <div>
+            <div style={{ fontWeight: '600', color: '#742a2a', fontSize: '14px' }}>
+              Docker Not Available
+            </div>
+            <div style={{ color: '#742a2a', fontSize: '12px' }}>
+              Container operations are disabled. Install Docker on the server to enable container management.
+            </div>
+          </div>
+        </div>
+      )}
+      
+      <div style={{
+        background: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(10px)',
+        borderRadius: '16px',
+        padding: '32px',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+      }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#2d3748', margin: 0 }}>
           Container Management
@@ -141,9 +177,14 @@ const ContainerList = ({ containers, onRefresh }) => {
                 <td>
                   <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                     {container.status === 'docker_unavailable' || !container.docker_available ? (
-                      <span style={{ fontSize: '11px', color: '#6b7280', fontStyle: 'italic' }}>
-                        Docker not available
-                      </span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <span style={{ fontSize: '10px', color: '#e53e3e', fontWeight: '600' }}>
+                          Docker Unavailable
+                        </span>
+                        <span style={{ fontSize: '9px', color: '#6b7280' }}>
+                          Install Docker to manage
+                        </span>
+                      </div>
                     ) : container.status === 'not_created' ? (
                       <button
                         onClick={() => handleContainerAction(container.name, 'create')}
@@ -204,6 +245,7 @@ const ContainerList = ({ containers, onRefresh }) => {
             ))}
           </tbody>
         </table>
+      </div>
       </div>
       
       <ConfirmModal

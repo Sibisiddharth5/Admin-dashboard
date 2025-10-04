@@ -18,8 +18,9 @@ def get_containers(admin: str = Depends(verify_admin_token), db: Session = Depen
     docker_available = True
     
     try:
-        # Try Docker API first
+        # Try Docker API first - check if socket is accessible
         client = docker.from_env()
+        client.ping()  # Test connection
         containers = client.containers.list(all=True)
         
         for container in containers:
