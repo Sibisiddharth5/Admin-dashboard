@@ -5,7 +5,7 @@ echo ========================================
 echo.
 echo Starting both Backend and Frontend...
 echo.
-echo Backend: http://localhost:8000
+echo Backend: https://app.kambaa.ai
 echo Frontend: http://localhost:3000 (Vite)
 echo.
 echo Press Ctrl+C to stop all services
@@ -17,8 +17,8 @@ start "Frontend Server" cmd /k "cd frontend && npm install && npm run dev"
 
 echo.
 echo Both servers are starting...
-echo Backend: http://localhost:8000
+echo Backend: https://app.kambaa.ai
 echo Frontend: http://localhost:3000 (Vite - Fast!)
-echo API Docs: http://localhost:8000/docs
+echo API Docs: https://app.kambaa.ai/docs
 echo.
 pause

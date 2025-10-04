@@ -15,7 +15,7 @@ const AdminManagement = ({ onSuccess }) => {
   const fetchAdmins = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await axios.get('http://localhost:8000/api/admin-management/admins', {
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/admin-management/admins`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAdmins(response.data);
@@ -36,7 +36,7 @@ const AdminManagement = ({ onSuccess }) => {
 
     try {
       const token = localStorage.getItem('adminToken');
-      await axios.post('http://localhost:8000/api/admin-management/admins', formData, {
+      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/admin-management/admins`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAlertMessage('Admin created successfully');
@@ -56,7 +56,7 @@ const AdminManagement = ({ onSuccess }) => {
   const handleDelete = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      await axios.delete(`http://localhost:8000/api/admin-management/admins/${adminToDelete.id}`, {
+      await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/api/admin-management/admins/${adminToDelete.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAlertMessage('Admin deleted successfully');

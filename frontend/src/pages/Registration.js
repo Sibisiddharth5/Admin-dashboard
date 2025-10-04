@@ -22,7 +22,7 @@ const Registration = ({ onSuccess }) => {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:8000/api/registration/register', formData);
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/registration/register`, formData);
       setAlertMessage(response.data.message);
       setAlertType('success');
       setShowAlert(true);

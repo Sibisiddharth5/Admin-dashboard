@@ -23,10 +23,10 @@ const Dashboard = ({ setIsAuthenticated }) => {
       const headers = { Authorization: `Bearer ${token}` };
       
       const [containersRes, usersRes, statsRes, profileRes] = await Promise.all([
-        axios.get('http://localhost:8000/api/containers/', { headers }),
-        axios.get('http://localhost:8000/api/users/', { headers }),
-        axios.get('http://localhost:8000/api/admin/stats', { headers }),
-        axios.get('http://localhost:8000/api/profile/me', { headers })
+        axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/containers/`, { headers }),
+        axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/users/`, { headers }),
+        axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/admin/stats`, { headers }),
+        axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/profile/me`, { headers })
       ]);
       
       setContainers(containersRes.data);
@@ -224,6 +224,11 @@ const DashboardHome = ({ stats }) => {
             {stats.total_containers || 0}
           </h3>
           <p style={{ margin: 0, color: '#718096', fontWeight: '600', fontSize: '16px' }}>Total Containers</p>
+          {stats.docker_available === false && (
+            <p style={{ margin: '8px 0 0 0', color: '#e53e3e', fontSize: '12px', fontStyle: 'italic' }}>
+              Docker unavailable
+            </p>
+          )}
         </div>
       </div>
 
@@ -253,8 +258,13 @@ const DashboardHome = ({ stats }) => {
                 <span style={{ fontWeight: '600', color: '#27ae60' }}>98.5%</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: '#4a5568' }}>System Health</span>
-                <span style={{ fontWeight: '600', color: '#27ae60' }}>Healthy</span>
+                <span style={{ color: '#4a5568' }}>Docker Status</span>
+                <span style={{ 
+                  fontWeight: '600', 
+                  color: stats.docker_available !== false ? '#27ae60' : '#e53e3e' 
+                }}>
+                  {stats.docker_available !== false ? 'Available' : 'Unavailable'}
+                </span>
               </div>
             </div>
           </div>
@@ -302,7 +312,7 @@ const UserList = ({ users, onRefresh }) => {
     
     try {
       const token = localStorage.getItem('adminToken');
-      await axios.delete(`http://localhost:8000/api/users/${userId}`, {
+      await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/api/users/${userId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       onRefresh();
