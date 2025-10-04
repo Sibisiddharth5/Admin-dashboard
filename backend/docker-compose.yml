@@ -8,6 +8,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock  # Mount Docker socket
     environment:
       - DATABASE_URL=mysql+mysqlconnector://root:@mysql-db:3306/dashboard_db
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    user: root  # Required for Docker socket access
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.admin-backend.rule=Host(`app.kambaa.ai`)"
